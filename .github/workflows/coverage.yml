@@ -1,0 +1,16 @@
+name: code coverage
+on: [push]
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm run test -- --coverage
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
