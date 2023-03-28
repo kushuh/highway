@@ -1,10 +1,13 @@
 {
   "name": "@anovel/highway",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.0",
   "description": "A minimalistic, modern, configuration centric, strongly typed alternative to fetch API.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "author": "Geoffroy Vincent",
+  "author": "Geoffroy Vincent <geoffroy.vincent@agoradesecrivains.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -15,18 +18,29 @@
   },
   "homepage": "https://github.com/kushuh/highway#readme",
   "scripts": {
+    "publish": "tsc && npm publish --access public",
     "build": "tsc",
     "test": "jest"
   },
+  "keywords": [
+    "fetch",
+    "http",
+    "api",
+    "request",
+    "typescript"
+  ],
   "devDependencies": {
     "@jest/globals": "^29.5.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
-    "prettier": "2.8.6",
+    "prettier": "2.8.7",
     "ts-jest": "^29.0.5",
     "typescript": "^5.0.2",
     "whatwg-fetch": "^3.6.2"
+  },
+  "directories": {
+    "lib": "lib"
   }
 }

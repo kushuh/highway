@@ -1,3 +1,6 @@
+![npm](https://img.shields.io/npm/v/@anovel/highway)
+![NPM](https://img.shields.io/npm/l/@anovel/highway)
+
 # Highway
 
 A minimalistic, modern, configuration centric, strongly typed alternative to fetch API.
