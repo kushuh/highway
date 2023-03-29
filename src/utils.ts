@@ -1,4 +1,4 @@
-import { RequestParams } from "./types";
+import { FetchRequest } from "./types";
 
 // Allow to merge two URLs and their respective pathname, which standard URL constructor does not allow.
 export const mergeURLs = (a: URL | string, b: URL | string | undefined): URL => {
@@ -32,13 +32,13 @@ export const mergeURLs = (a: URL | string, b: URL | string | undefined): URL => 
 };
 
 // Automatically parse request body, depending on configuration.
-export const parseBody = <T extends RequestParams>(params: T): BodyInit | null | undefined => {
+export const parseBody = <T extends FetchRequest>(params: T): BodyInit | null | undefined => {
   if (params.body == null) {
     return undefined;
   }
 
   // For now, only JSON is supported, so we can remain simple.
-  if ("bodyResolver" in params) {
+  if ("bodyResolver" in params && params.bodyResolver === "json") {
     return JSON.stringify(params.body);
   }
 

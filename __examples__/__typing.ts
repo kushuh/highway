@@ -1,4 +1,4 @@
-import { handle } from "../src/fetcher";
+import { handle } from "../src";
 
 // ================================================================================
 // You can hover on lines, and see if the type matches their comment.
