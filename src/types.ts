@@ -180,7 +180,8 @@ export class APIError extends Error {
   // The raw response object.
   private response: Response;
   // Stores the response text once retrieved, because response body can only be read once.
-  private responseText?: string;
+  private responseText: string;
+  private responseBodyParsed: boolean;
 
   constructor(response: Response) {
     // Call the standard error constructor, with the status text as the message.
@@ -190,29 +191,31 @@ export class APIError extends Error {
 
     // To be able to detect the error type.
     this.name = "APIError";
-    // Prevent errors if attempting to access the response body externally.
-    this.response = response.clone();
+    this.status = response.status;
+    this.response = response;
+    this.responseBodyParsed = false;
+    this.responseText = "";
   }
 
   /**
    * Returns the HTTP status of the response.
    */
-  status = () => this.response.status;
+  status: number;
 
   /**
    * Returns the text body of the response.
    */
   text = async (): Promise<string> => {
     // Assign the response text if body has not been read yet.
-    if (!this.responseText) {
+    if (!this.responseBodyParsed) {
       this.responseText = await this.response.text();
     }
 
-    return Promise.resolve(this.responseText);
+    return this.responseText;
   };
 }
 
 /**
  * Type checking for {@link APIError}.
  */
-export const isAPIError = (error: unknown): error is APIError => error instanceof APIError;
+export const isAPIError = (error: any): error is APIError => error?.name === "APIError";

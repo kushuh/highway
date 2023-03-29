@@ -1,16 +1,17 @@
 import { createInstance, handle } from "../src/fetcher";
-import { isAPIError, RequestParams, RequestParamsBody, Resolver } from "../src";
+import { isAPIError, RequestParamsBody, Resolver } from "../src";
 
 interface useFetchMockParams {
   response?: Response;
   reject?: any;
 }
 
-const DEFAULT_RESPONSE_CONTENT = { message: "slippery slope" };
-const DEFAULT_RESPONSE = new Response(JSON.stringify(DEFAULT_RESPONSE_CONTENT), {
-  status: 200,
-  statusText: "ok",
-});
+export const DEFAULT_RESPONSE_CONTENT = { message: "slippery slope" };
+export const DEFAULT_RESPONSE = () =>
+  new Response(JSON.stringify(DEFAULT_RESPONSE_CONTENT), {
+    status: 200,
+    statusText: "ok",
+  });
 
 export const newFetchMock = ({ response, reject }: useFetchMockParams) =>
   jest
@@ -26,7 +27,7 @@ afterEach(() => {
 
 describe("handle", () => {
   it("should perform a standard fetch request", async () => {
-    const apiCall = newFetchMock({ response: DEFAULT_RESPONSE });
+    const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
     jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
     const fetcher = createInstance();
@@ -50,7 +51,7 @@ describe("handle", () => {
 
     Object.entries(testCases).forEach(([method, httpMethod]) => {
       it(`should perform a shorthand ${method} request`, async () => {
-        const apiCall = newFetchMock({ response: DEFAULT_RESPONSE });
+        const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
         jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
         const fetcher = createInstance();
@@ -195,7 +196,7 @@ describe("handle", () => {
 
     Object.entries(testCases).forEach(([bodyResolver, { body, expect: expectParsed }]) => {
       it(`should parse request body when parser is set to ${bodyResolver || "empty"}`, async () => {
-        const apiCall = newFetchMock({ response: DEFAULT_RESPONSE });
+        const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
         jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
         let reqParams = {
@@ -249,7 +250,7 @@ describe("handle", () => {
         headers: new Headers(),
       });
       expect(isAPIError(res)).toBeTruthy();
-      expect(res?.status()).toEqual(404);
+      expect(res?.status).toEqual(404);
       expect(await res?.text()).toEqual("it broken");
     });
 
@@ -287,7 +288,7 @@ describe("createInstance", () => {
   });
 
   it("should inherit headers", async () => {
-    const apiCall = newFetchMock({ response: DEFAULT_RESPONSE });
+    const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
     jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
     const instance1 = createInstance({
@@ -323,7 +324,7 @@ describe("createInstance", () => {
   });
 
   it("should inherit requestInit", async () => {
-    const apiCall = newFetchMock({ response: DEFAULT_RESPONSE });
+    const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
     jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
     const instance1 = createInstance({
@@ -361,7 +362,7 @@ describe("createInstance", () => {
 
   describe("url", () => {
     it("should inherit base URL", async () => {
-      const apiCall = newFetchMock({ response: DEFAULT_RESPONSE });
+      const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
       jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
       const instance1 = createInstance({ base: "https://snowball.aq" });
@@ -380,7 +381,7 @@ describe("createInstance", () => {
     });
 
     it("should inherit URL Search Params", async () => {
-      const apiCall = newFetchMock({ response: DEFAULT_RESPONSE });
+      const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
       jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
       const instance1 = createInstance({ base: "https://snowball.aq?foo=bar&id=42" });
@@ -404,7 +405,7 @@ describe("createInstance", () => {
     });
 
     it("should replace all previous routes when providing absolute URL", async () => {
-      const apiCall = newFetchMock({ response: DEFAULT_RESPONSE });
+      const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
       jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
       const instance1 = createInstance({ base: "https://snowball.aq?foo=bar&id=42" });
@@ -424,7 +425,7 @@ describe("createInstance", () => {
     });
 
     it("can skip providing routes in the middle of the chain", async () => {
-      const apiCall = newFetchMock({ response: DEFAULT_RESPONSE });
+      const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
       jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
       const instance1 = createInstance();

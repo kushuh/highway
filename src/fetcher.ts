@@ -44,14 +44,14 @@ export class Highway {
     // Perform the request with native API.
     const response = await fetch(path, params);
 
-    if ("soft" in req && req.soft) {
-      return response as unknown as ExtendedResponseType<Req>;
-    }
-
     const resolver = "resolver" in req && req.resolver;
 
     // Prevent successful responses, if the status code is not a success code.
     if (!response.ok) {
+      if ("soft" in req && req.soft) {
+        return response as unknown as ExtendedResponseType<Req>;
+      }
+
       throw new APIError(response);
     }
 
@@ -79,6 +79,8 @@ export class Highway {
       case "formData":
         return (await response.formData()) as ExtendedResponseType<Req>;
       case "void":
+        // https://github.com/nodejs/undici#garbage-collection
+        await response.text();
         return undefined as unknown as ExtendedResponseType<Req>;
       default:
         return response as ExtendedResponseType<Req>;
