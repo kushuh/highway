@@ -1,5 +1,6 @@
 ![npm](https://img.shields.io/npm/v/@anovel/highway)
 ![NPM](https://img.shields.io/npm/l/@anovel/highway)
+![Codecov](https://img.shields.io/codecov/c/gh/kushuh/highway)
 
 # Highway
 
@@ -21,7 +22,7 @@ const baseAPI = createInstance({
 
 const moviesAPI = baseAPI.createInstance({ base: "/movies" });
 
-// GET https://example.com/api/movies
+// GET https://example.com/api/movies/{id}
 const getMovie = (id: string): Promise<MovieResponse | undefined> => 
   moviesAPI.get({ path: `/${id}`, resolver: "json" });
 
@@ -64,6 +65,9 @@ const myMovie = await getMovie("123");
   - [Headers](#headers)
   - [RequestInit](#requestinit)
   - [baseURL](#base-url)
+- [React Hook](#react-hook)
+  - [Lifecycle](#lifecycle)
+  - [Hook configuration](#hook-configuration)
 
 ## About
 
@@ -129,6 +133,11 @@ const response = await destroy({
 });
 ```
 
+> If you use this package in a Node environment, and are not using 
+> [automatic response parsing](#automatic-response-parsing), make sure to either consume the response body, or
+> use a method that does not return a body. NodeJS's implementation does not garbage collect the response if it
+> is not consumed (see https://github.com/nodejs/undici/blob/main/README.md#garbage-collection).
+
 ### Error handling
 
 By default, Highway will throw an error if the response status is not in the 200-299 range.
@@ -157,7 +166,7 @@ try {
 } catch (error) {
   if (isAPIError(error)) {
     console.error(error.message); // Prints the status message.
-    console.error(error.status()); // Prints the status code.
+    console.error(error.status); // Prints the status code.
     console.error(await error.text()); // Print the actual body of the response.
   } else {
     // Handle other errors.
@@ -432,3 +441,114 @@ const response = await myAPIInstance.handle({ path: "/movies.json", method: "GET
 
 > The first path to be declared MUST BE absolute, whether it is defined at instance or request level.
 > Once a valid absolute path is set, every child paths can be relative.
+
+## React Hook
+
+Highway provides a React hook, to easily handle API responses as React states.
+
+```tsx
+import { useEffect, FC } from "react";
+
+import { get } from '@anovel/highway';
+import { useFetch } from '@anovel/highway/react';
+
+const myAPICall = (id: string): Promise<MovieResponse | undefined> =>
+  get({ path: `https://example.com/api/${id}`, resolver: "json" });
+
+const MyReactComponent: FC<{ id: string }> = ({ id }) => {
+  const { trigger, loading, response, apiError, error } = useFetch({ call: myAPICall });
+  
+  // Trigger the api every time the ID changes.
+  useEffect(() => {
+    trigger(id);
+  }, [id, trigger]);
+  
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+  // APIError is only returned when a valid response was receiver, with a 
+  // non-200 status code.
+  if (apiError) {
+    return <p>API Error: {apiError.message}</p>;
+  }
+  if (error) {
+    return <p>Unexpected Error: {error.message}</p>;
+  }
+  
+  return <p>{response?.title}</p>;
+};
+```
+
+The hook takes a single required parameter, which is an async method that returns a specific result. 
+
+Note how, outside the `APIError` type, it is completely independent of Highway. You could perfectly use this hook
+with the standard `fetch` API, or any other API client 9such as axios).
+
+```tsx
+import { useEffect, FC } from "react";
+
+import { get } from '@anovel/highway';
+import { useFetch } from '@anovel/highway/react';
+
+const MyReactComponent: FC<{ id: string }> = ({ id }) => {
+  // Just use it as a generic fetch handler. Here, response would have the 
+  // global Response type.
+  const { trigger, loading, response, apiError, error } = useFetch({ call: fetch });
+  
+  useEffect(() => {
+    // Here, the signature of trigger matches the signature of the method 
+    // we provided to it.
+    trigger(`https://example.com/api/${id}`, { method: "GET" });
+  }, [id, trigger]);
+  
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+  if (apiError) {
+    return <p>API Error: {apiError.message}</p>;
+  }
+  if (error) {
+    return <p>Unexpected Error: {error.message}</p>;
+  }
+  
+  return <p>{response?.title}</p>;
+};
+```
+
+### Lifecycle
+
+During a typical http fetch, you'll trigger a request, wait for a response with a Promise, then either pick the
+response result or handle the error. You'll find all those steps in the hook:
+
+- **Initial state**: loading is false, and every variable is empty except for trigger.
+- **Call `trigger`**: Trigger takes the input of your typical fetch request, but returns nothing. Since we are in
+a React environment, updates will come from states changes, rather than manually waiting for Promises.
+- **Loading**: As soon as `trigger` is fired, loading state is updated at `true`.
+- **Response**: When a response is received within the hook, it is cast to the `response` state. Note the hook does
+not validate the response for you. It only parses errors if the handler throws something. So if you use the standard
+fetch API, for example, non-200 statuses will still write to the `response` state, and leave errors empty.
+- **Error**: If the given handler throws, the hook leaves the previous response state untouched, and writes the error
+to either `error` or `apiError` (depending on the error type). If you use a library that doesn't support APIError, then
+you may only look at the `error` state.
+
+### Hook configuration
+
+`useFetch` accepts additional configuration options, although only `call` is required.
+
+```tsx
+import { useEffect, FC } from "react";
+
+import { get } from '@anovel/highway';
+import { useFetch } from '@anovel/highway/react';
+
+const MyReactComponent: FC<{ id: string }> = ({ id }) => {
+  const fetcher = useFetch({ 
+    call: fetch, 
+    // The initial parameter is used as a temporary value for the response state,
+    // until a valid response is retrieved from the API.
+    initial: { id: 42 },
+    // This handler is triggered every time a new call is made.
+    onLoading: () => console.log("Loading..."),
+  });
+};
+```
