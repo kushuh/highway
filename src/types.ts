@@ -41,133 +41,89 @@ export interface Config {
 // REQUEST TYPES
 // ================================================================================
 
-/**
- * This interface contains options to parse the request output.
- */
-export type RequestResolverParams = {
-  /**
-   * When given, throws an error if the response body is empty. Otherwise, an empty body will yield an undefined
-   * response (with no error).
-   *
-   * NOTE: this is INDEPENDENT of the response status. If this flag is set to true, and the fetch call returns a
-   * 204 response (no content), an error will still be thrown. On the other hand, having any status code returning
-   * an empty body will not throw any error, if this flag is set to false.
-   */
-  must?: boolean;
-} & (
+export type FetchRequestBody =
   | {
-      /**
-       * When set to true, a non-ok response will not throw an error, but be returned as is, like the standard API would.
-       * This option is not compatible with resolvers.
-       */
+      method: "GET" | "HEAD";
+      body?: never;
+    }
+  | {
+      method: "POST" | "PUT" | "PATCH" | "DELETE";
+      bodyResolver: "json";
+      body?: any;
+    }
+  | {
+      method: "POST" | "PUT" | "PATCH" | "DELETE";
+      bodyResolver?: never;
+      body?: BodyInit;
+    };
+
+export type FetchRequestResponseResolver =
+  | {
       soft: true;
       resolver?: never;
     }
   | {
       soft?: false;
-      /**
-       * If set, automatically parse the response body according to the expected output.
-       * By default, the raw {@link Response} object is returned.
-       */
       resolver?: Resolver;
-    }
-);
-
-/**
- * Generic configurations for requests with body.
- */
-export type RequestBodyParams =
-  | {
-      body: BodyInit;
-    }
-  | {
-      bodyResolver: "json";
-      body: any;
     };
 
-export type RequestMinimalParamsNoBody = {
-  /**
-   * Method to use for the request.
-   */
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  /**
-   * Path of the request. It may be a relative path, but only if the instance has a base url already set.
-   */
+export type FetchRequestBase = {
   path: string | URL;
-  body?: never;
-};
-
-export type RequestMinimalParamsBody = RequestBodyParams & {
-  /**
-   * Method to use for the request.
-   */
-  method: "POST" | "PUT" | "PATCH" | "DELETE";
-  /**
-   * Path of the request. It may be a relative path, but only if the instance has a base url already set.
-   */
-  path: string | URL;
-};
-
-/**
- * This interface contains the remaining configuration options for a request, that are not present in
- * {@link RequestMinimalParams}.
- */
-export interface RequestOptionalParams {
-  /**
-   * Optional headers for the request. They are merged with (and override) the class headers if any.
-   */
   headers?: HeadersInit;
-  /**
-   * Optional parameters for the request. They are merged with (and override) the class parameters if any.
-   */
   requestInit?: Omit<RequestInit, "headers" | "method" | "body">;
-  /**
-   * Optional url parameters to add to the request path.
-   */
   params?: string | Record<string, string> | URLSearchParams | string[][];
-}
+  must?: boolean;
+};
 
-export type RequestParamsBody = RequestMinimalParamsBody & RequestOptionalParams & RequestResolverParams;
+export type FetchRequest = FetchRequestBase & FetchRequestResponseResolver & FetchRequestBody;
 
-export type RequestParamsNoBody = RequestMinimalParamsNoBody & RequestOptionalParams & RequestResolverParams;
-
-export type RequestParams = RequestParamsBody | RequestParamsNoBody;
-
-// ================================================================================
-// RESPONSE TYPES
-// ================================================================================
-
-/**
- * Automatically set the response type based on the resolver configuration.
- */
-export type ResponseType<R extends RequestResolverParams> =
+export type FetchResponseMust<Req extends FetchRequestResponseResolver> =
   // If the request set resolver=text, the response should be of string type.
-  R extends { resolver: "text" }
+  Req extends { resolver: "text" }
     ? string
     : // If the request set resolver=json, the response can be any type.
-    R extends { resolver: "json" }
+    Req extends { resolver: "json" }
     ? any
     : // If the request set resolver=blob, the response should be of Blob type.
-    R extends { resolver: "blob" }
+    Req extends { resolver: "blob" }
     ? Blob
     : // If the request set resolver=arrayBuffer, the response should be of ArrayBuffer type.
-    R extends { resolver: "arrayBuffer" }
+    Req extends { resolver: "arrayBuffer" }
     ? ArrayBuffer
     : // If the request set resolver=formData, the response should be of FormData type.
-    R extends { resolver: "formData" }
+    Req extends { resolver: "formData" }
     ? FormData
     : // If the request set resolver=void, the response should be ignored.
-    R extends { resolver: "void" }
+    Req extends { resolver: "void" }
     ? void
     : // By default, return the raw response object.
       Response;
 
-/**
- * Extends the {@link ResponseType} type to accept undefined (void) return values.
- */
-export type ExtendedResponseType<R extends RequestResolverParams> =
-  // Only if a resolver is set, can the response be undefined.
-  R extends { must?: false; resolver: Resolver } ? ResponseType<R> | undefined : ResponseType<R>;
+export type FetchResponseOptional<Req extends FetchRequestResponseResolver> =
+  // If the request set resolver=text, the response should be of string type.
+  Req extends { resolver: "text" }
+    ? string | void
+    : // If the request set resolver=json, the response can be any type.
+    Req extends { resolver: "json" }
+    ? any
+    : // If the request set resolver=blob, the response should be of Blob type.
+    Req extends { resolver: "blob" }
+    ? Blob | void
+    : // If the request set resolver=arrayBuffer, the response should be of ArrayBuffer type.
+    Req extends { resolver: "arrayBuffer" }
+    ? ArrayBuffer | void
+    : // If the request set resolver=formData, the response should be of FormData type.
+    Req extends { resolver: "formData" }
+    ? FormData | void
+    : // If the request set resolver=void, the response should be ignored.
+    Req extends { resolver: "void" }
+    ? void
+    : // By default, return the raw response object.
+      Response;
+
+export type FetchResponse<Req extends FetchRequest> = Req extends { must: true }
+  ? FetchResponseMust<Req>
+  : FetchResponseOptional<Req>;
 
 // ================================================================================
 // ERROR TYPES

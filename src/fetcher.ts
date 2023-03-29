@@ -1,4 +1,4 @@
-import { APIError, Config, ExtendedResponseType, RequestParams, RequestParamsNoBody } from "./types";
+import { APIError, Config, FetchRequest, FetchResponse } from "./types";
 import { mergeURLs, parseBody, parseHeaders } from "./utils";
 
 /**
@@ -22,7 +22,7 @@ export class Highway {
     this.requestInit = requestInit;
   }
 
-  handle = async <Req extends RequestParams>(req: Req): Promise<ExtendedResponseType<Req>> => {
+  handle = async <Req extends FetchRequest>(req: Req): Promise<FetchResponse<Req>> => {
     // Merge parameters together, and form the request API configuration.
     const params: RequestInit = { ...(this.requestInit || {}), ...(req.requestInit || {}), method: req.method };
 
@@ -49,7 +49,7 @@ export class Highway {
     // Prevent successful responses, if the status code is not a success code.
     if (!response.ok) {
       if ("soft" in req && req.soft) {
-        return response as unknown as ExtendedResponseType<Req>;
+        return response as FetchResponse<Req>;
       }
 
       throw new APIError(response);
@@ -61,7 +61,7 @@ export class Highway {
         throw new Error("api call returned an empty response body");
       }
 
-      return (resolver ? undefined : response) as unknown as ExtendedResponseType<Req>;
+      return (resolver ? undefined : response) as FetchResponse<Req>;
     }
 
     // As of today (03 2023), type inference works well when calling the function. It seems, however, that
@@ -69,34 +69,31 @@ export class Highway {
     // in future releases, but for now, the "as ResponseType<PReq>" is required, to avoid typescript errors.
     switch (resolver) {
       case "text":
-        return (await response.text()) as ExtendedResponseType<Req>;
+        return (await response.text()) as FetchResponse<Req>;
       case "json":
-        return (await response.json()) as ExtendedResponseType<Req>;
+        return (await response.json()) as FetchResponse<Req>;
       case "blob":
-        return (await response.blob()) as ExtendedResponseType<Req>;
+        return (await response.blob()) as FetchResponse<Req>;
       case "arrayBuffer":
-        return (await response.arrayBuffer()) as ExtendedResponseType<Req>;
+        return (await response.arrayBuffer()) as FetchResponse<Req>;
       case "formData":
-        return (await response.formData()) as ExtendedResponseType<Req>;
+        return (await response.formData()) as FetchResponse<Req>;
       case "void":
         // https://github.com/nodejs/undici#garbage-collection
         await response.text();
-        return undefined as unknown as ExtendedResponseType<Req>;
+        return undefined as FetchResponse<Req>;
       default:
-        return response as ExtendedResponseType<Req>;
+        return response as FetchResponse<Req>;
     }
   };
 
-  get = <TReq extends RequestParamsNoBody>(params: Omit<TReq, "method">): Promise<ExtendedResponseType<TReq>> =>
-    this.handle({ method: "GET", ...params } as TReq);
-  post = <TReq extends RequestParams>(params: Omit<TReq, "method">): Promise<ExtendedResponseType<TReq>> =>
-    this.handle({ ...params, method: "POST" } as TReq);
-  put = <TReq extends RequestParams>(params: Omit<TReq, "method">): Promise<ExtendedResponseType<TReq>> =>
-    this.handle({ ...params, method: "PUT" } as TReq);
-  patch = <TReq extends RequestParams>(params: Omit<TReq, "method">): Promise<ExtendedResponseType<TReq>> =>
-    this.handle({ ...params, method: "PATCH" } as TReq);
-  destroy = <TReq extends RequestParams>(params: Omit<TReq, "method">): Promise<ExtendedResponseType<TReq>> =>
-    this.handle({ ...params, method: "DELETE" } as TReq);
+  get = <Req extends FetchRequest>(params: Omit<Req, "method" | "body">) =>
+    this.handle({ ...params, method: "GET" } as Req);
+  post = <Req extends FetchRequest>(params: Omit<Req, "method">) => this.handle({ ...params, method: "POST" } as Req);
+  put = <Req extends FetchRequest>(params: Omit<Req, "method">) => this.handle({ ...params, method: "PUT" } as Req);
+  patch = <Req extends FetchRequest>(params: Omit<Req, "method">) => this.handle({ ...params, method: "PATCH" } as Req);
+  destroy = <Req extends FetchRequest>(params: Omit<Req, "method">) =>
+    this.handle({ ...params, method: "DELETE" } as Req);
 
   createInstance = ({ base, headers, requestInit }: Config = {}): Highway =>
     new Highway({

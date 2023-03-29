@@ -482,7 +482,7 @@ const MyReactComponent: FC<{ id: string }> = ({ id }) => {
 The hook takes a single required parameter, which is an async method that returns a specific result. 
 
 Note how, outside the `APIError` type, it is completely independent of Highway. You could perfectly use this hook
-with the standard `fetch` API, or any other API client 9such as axios).
+with the standard `fetch` API, or any other API client (such as axios).
 
 ```tsx
 import { useEffect, FC } from "react";

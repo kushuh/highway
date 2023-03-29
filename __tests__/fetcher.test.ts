@@ -1,5 +1,5 @@
-import { createInstance, handle } from "../src/fetcher";
-import { isAPIError, RequestParamsBody, Resolver } from "../src";
+import { createInstance, handle } from "../src";
+import { isAPIError, Resolver } from "../src";
 
 interface useFetchMockParams {
   response?: Response;
@@ -199,23 +199,14 @@ describe("handle", () => {
         const apiCall = newFetchMock({ response: DEFAULT_RESPONSE() });
         jest.spyOn(global, "fetch").mockImplementation(apiCall);
 
-        let reqParams = {
+        const fetcher = createInstance();
+        const res = await fetcher.handle({
           method: "POST",
           path: "https://snowball.aq",
-        } as RequestParamsBody;
-
-        if (bodyResolver === "") {
-          reqParams.body = body as BodyInit | null | undefined;
-        } else {
-          reqParams = {
-            ...reqParams,
-            bodyResolver: bodyResolver as "json",
-            body: body,
-          };
-        }
-
-        const fetcher = createInstance();
-        const res = await fetcher.handle(reqParams);
+          body,
+          // @ts-ignore
+          bodyResolver: bodyResolver === "" ? undefined : bodyResolver,
+        });
 
         expect(apiCall).toHaveBeenNthCalledWith(1, new URL("https://snowball.aq"), {
           method: "POST",
