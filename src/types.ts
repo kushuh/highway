@@ -41,21 +41,27 @@ export interface Config {
 // REQUEST TYPES
 // ================================================================================
 
-export type FetchRequestBody =
+export type FetchRequestBodyGet = {
+  body?: never;
+};
+
+export type FetchRequestBodyPost =
   | {
-      method: "GET" | "HEAD";
-      body?: never;
-    }
-  | {
-      method: "POST" | "PUT" | "PATCH" | "DELETE";
       bodyResolver: "json";
       body?: any;
     }
   | {
-      method: "POST" | "PUT" | "PATCH" | "DELETE";
       bodyResolver?: never;
       body?: BodyInit;
     };
+
+export type FetchRequestBodyGetMethods = {
+  method: "GET" | "HEAD";
+};
+
+export type FetchRequestBodyPostMethods = {
+  method: "POST" | "PUT" | "PATCH" | "DELETE";
+};
 
 export type FetchRequestResponseResolver =
   | {
@@ -75,7 +81,11 @@ export type FetchRequestBase = {
   must?: boolean;
 };
 
-export type FetchRequest = FetchRequestBase & FetchRequestResponseResolver & FetchRequestBody;
+export type FetchRequestGet = FetchRequestBase & FetchRequestBodyGet & FetchRequestResponseResolver;
+export type FetchRequestPost = FetchRequestBase & FetchRequestBodyPost & FetchRequestResponseResolver;
+export type FetchRequest =
+  | (FetchRequestGet & FetchRequestBodyGetMethods)
+  | (FetchRequestPost & FetchRequestBodyPostMethods);
 
 export type FetchResponseMust<Req extends FetchRequestResponseResolver> =
   // If the request set resolver=text, the response should be of string type.
@@ -121,7 +131,7 @@ export type FetchResponseOptional<Req extends FetchRequestResponseResolver> =
     : // By default, return the raw response object.
       Response;
 
-export type FetchResponse<Req extends FetchRequest> = Req extends { must: true }
+export type FetchResponse<Req extends FetchRequestResponseResolver & { must?: boolean }> = Req extends { must: true }
   ? FetchResponseMust<Req>
   : FetchResponseOptional<Req>;
 
