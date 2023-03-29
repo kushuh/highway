@@ -1,4 +1,4 @@
-import { APIError, Config, FetchRequest, FetchResponse } from "./types";
+import { APIError, Config, FetchRequest, FetchRequestGet, FetchRequestPost, FetchResponse } from "./types";
 import { mergeURLs, parseBody, parseHeaders } from "./utils";
 
 /**
@@ -44,8 +44,6 @@ export class Highway {
     // Perform the request with native API.
     const response = await fetch(path, params);
 
-    const resolver = "resolver" in req && req.resolver;
-
     // Prevent successful responses, if the status code is not a success code.
     if (!response.ok) {
       if ("soft" in req && req.soft) {
@@ -61,13 +59,13 @@ export class Highway {
         throw new Error("api call returned an empty response body");
       }
 
-      return (resolver ? undefined : response) as FetchResponse<Req>;
+      return (req.resolver ? undefined : response) as FetchResponse<Req>;
     }
 
     // As of today (03 2023), type inference works well when calling the function. It seems, however, that
     // typescript struggles to properly infer complex types within guard clauses. Maybe it will work better
     // in future releases, but for now, the "as ResponseType<PReq>" is required, to avoid typescript errors.
-    switch (resolver) {
+    switch (req.resolver) {
       case "text":
         return (await response.text()) as FetchResponse<Req>;
       case "json":
@@ -87,13 +85,16 @@ export class Highway {
     }
   };
 
-  get = <Req extends FetchRequest>(params: Omit<Req, "method" | "body">) =>
-    this.handle({ ...params, method: "GET" } as Req);
-  post = <Req extends FetchRequest>(params: Omit<Req, "method">) => this.handle({ ...params, method: "POST" } as Req);
-  put = <Req extends FetchRequest>(params: Omit<Req, "method">) => this.handle({ ...params, method: "PUT" } as Req);
-  patch = <Req extends FetchRequest>(params: Omit<Req, "method">) => this.handle({ ...params, method: "PATCH" } as Req);
-  destroy = <Req extends FetchRequest>(params: Omit<Req, "method">) =>
-    this.handle({ ...params, method: "DELETE" } as Req);
+  get = <Req extends FetchRequestGet>(params: Req) =>
+    this.handle({ ...params, method: "GET" }) as Promise<FetchResponse<Req>>;
+  post = <Req extends FetchRequestPost>(params: Req) =>
+    this.handle({ ...params, method: "POST" }) as Promise<FetchResponse<Req>>;
+  put = <Req extends FetchRequestPost>(params: Req) =>
+    this.handle({ ...params, method: "PUT" }) as Promise<FetchResponse<Req>>;
+  patch = <Req extends FetchRequestPost>(params: Req) =>
+    this.handle({ ...params, method: "PATCH" }) as Promise<FetchResponse<Req>>;
+  destroy = <Req extends FetchRequestPost>(params: Req) =>
+    this.handle({ ...params, method: "DELETE" }) as Promise<FetchResponse<Req>>;
 
   createInstance = ({ base, headers, requestInit }: Config = {}): Highway =>
     new Highway({
