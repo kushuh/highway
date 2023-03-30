@@ -1,1 +1,2 @@
-export * from "./hook";
+export * from "./fetch-hook";
+export * from "./ping-hook";
