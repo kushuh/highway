@@ -114,4 +114,29 @@ describe("usePing", () => {
 
     expect(caller).toHaveBeenCalledTimes(3);
   });
+
+  it("should call trigger only once, if interval is set to 0", async () => {
+    const caller = jest.fn();
+    const { rerender } = renderHook((interval) => usePing({ call: caller, args: [], interval }), {
+      initialProps: 0,
+    });
+
+    expect(caller).toHaveBeenCalledTimes(1);
+
+    await act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(caller).toHaveBeenCalledTimes(1);
+
+    rerender(1000);
+
+    expect(caller).toHaveBeenCalledTimes(2);
+
+    await act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(caller).toHaveBeenCalledTimes(3);
+  });
 });
