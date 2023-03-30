@@ -49,6 +49,18 @@ export interface FetchHookResult<Res, Req extends any[]> {
    * is stored here.
    */
   error?: unknown;
+  /**
+   * Force the {@link response} value.
+   */
+  setResponse: (res?: Res) => void;
+  /**
+   * Force the {@link apiError} value.
+   */
+  setAPIError: (err?: APIError) => void;
+  /**
+   * Force the {@link error} value.
+   */
+  setError: (err?: unknown) => void;
 }
 
 export const useFetch = <Res, Req extends any[]>({
@@ -58,7 +70,7 @@ export const useFetch = <Res, Req extends any[]>({
 }: FetchHookParams<Res, Req>): FetchHookResult<Res, Req> => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(initial);
-  const [apiError, setApiError] = useState<APIError>();
+  const [apiError, setAPIError] = useState<APIError>();
   const [error, setError] = useState<unknown>();
 
   const trigger = useCallback(
@@ -69,11 +81,11 @@ export const useFetch = <Res, Req extends any[]>({
       try {
         const res = await call(...req);
         setResponse(res);
-        setApiError(undefined);
+        setAPIError(undefined);
         setError(undefined);
       } catch (e) {
         if (isAPIError(e)) {
-          setApiError(e);
+          setAPIError(e);
         } else {
           setError(e);
         }
@@ -90,5 +102,8 @@ export const useFetch = <Res, Req extends any[]>({
     response,
     apiError,
     error,
+    setResponse,
+    setAPIError,
+    setError,
   };
 };
