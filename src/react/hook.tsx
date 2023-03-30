@@ -3,7 +3,7 @@ import "client-only";
 import { APIError, isAPIError } from "../types";
 import { useCallback, useState } from "react";
 
-export interface FetchHookParams<Res, Req extends { new (...arg: any): any }[]> {
+export interface FetchHookParams<Res, Req extends any[]> {
   /**
    * The async function that will be called when the hook is triggered. It must return a promise. If an error is returned
    * by the API, it should be of type {@link APIError}.
@@ -20,7 +20,7 @@ export interface FetchHookParams<Res, Req extends { new (...arg: any): any }[]> 
   onLoading?: () => void;
 }
 
-export interface FetchHookResult<Res, Req extends { new (...arg: any): any }[]> {
+export interface FetchHookResult<Res, Req extends any[]> {
   /**
    * Triggers the api call. When called, loading is set to true until the call completes.
    *
@@ -51,7 +51,7 @@ export interface FetchHookResult<Res, Req extends { new (...arg: any): any }[]> 
   error?: unknown;
 }
 
-export const useFetch = <Res, Req extends { new (...arg: any): any }[]>({
+export const useFetch = <Res, Req extends any[]>({
   call,
   initial,
   onLoading,
