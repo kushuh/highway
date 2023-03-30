@@ -3,13 +3,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A minimalistic, modern, configuration centric, strongly typed alternative to fetch API.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "exports": {
-    "./react": "./lib/react/index.js"
-  },
+  "files": [
+    "lib/react/index.js",
+    "lib/react/index.d.ts"
+  ],
   "author": "Geoffroy Vincent <geoffroy.vincent@agoradesecrivains.com>",
   "license": "MIT",
   "repository": {
