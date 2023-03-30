@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A minimalistic, modern, configuration centric, strongly typed alternative to fetch API.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -13,7 +13,7 @@
       "import": "./lib/index.js",
       "require": "./lib/index.js"
     },
-    "./consolidator": {
+    "./react": {
       "types" :"./lib/react/index.d.ts",
       "import": "./lib/react/index.js",
       "require": "./lib/react/index.js"
