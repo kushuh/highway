@@ -10,7 +10,7 @@ export interface PingHookParams<Req extends any[]> {
    */
   args: Req;
   /**
-   * The interval in milliseconds.
+   * The interval in milliseconds. If a value less than 1 is specified, the trigger is called only once.
    */
   interval: number;
   /**
@@ -29,6 +29,8 @@ export const usePing = <Req extends any[]>({ call, args, interval, condition }: 
     if (condition === false) return;
 
     call(...args);
+    if (interval < 1) return;
+
     intervalRef.current = window.setInterval(() => call(...args), interval);
     return () => window.clearInterval(intervalRef.current);
   }, [call, args, interval, condition]);
