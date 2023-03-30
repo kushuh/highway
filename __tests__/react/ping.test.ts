@@ -81,4 +81,37 @@ describe("usePing", () => {
 
     expect(caller).toHaveBeenCalledTimes(2);
   });
+
+  it("should not call the trigger function when the condition is false", async () => {
+    const caller = jest.fn();
+    const { rerender } = renderHook((condition) => usePing({ call: caller, args: [], interval: 1000, condition }), {
+      initialProps: true,
+    });
+
+    expect(caller).toHaveBeenCalledTimes(1);
+
+    await act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(caller).toHaveBeenCalledTimes(2);
+
+    await act(() => {
+      rerender(false);
+    });
+
+    expect(caller).toHaveBeenCalledTimes(2);
+
+    await act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(caller).toHaveBeenCalledTimes(2);
+
+    await act(() => {
+      rerender(true);
+    });
+
+    expect(caller).toHaveBeenCalledTimes(3);
+  });
 });
