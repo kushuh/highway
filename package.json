@@ -3,13 +3,21 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A minimalistic, modern, configuration centric, strongly typed alternative to fetch API.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "exports": {
-    ".": "./lib/index.js",
-    "./react": "./lib/react/index.js"
+    ".": {
+      "types" :"./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
+    },
+    "./consolidator": {
+      "types" :"./lib/react/index.d.ts",
+      "import": "./lib/react/index.js",
+      "require": "./lib/react/index.js"
+    }
   },
   "author": "Geoffroy Vincent <geoffroy.vincent@agoradesecrivains.com>",
   "license": "MIT",
@@ -46,9 +54,10 @@
     "typescript": "^5.0.2",
     "undici": "^5.21.0"
   },
-  "directories": {
-    "lib": "lib"
-  },
+  "files": [
+    "lib",
+    "*.d.ts"
+  ],
   "dependencies": {
     "@types/node": "^18.15.11",
     "@types/react": "^18.0.30",
