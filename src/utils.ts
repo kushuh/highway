@@ -6,9 +6,9 @@ export const mergeURLs = (a: URL | string, b: URL | string | undefined): URL => 
     return new URL(a);
   }
 
-  const sourceURL = new URL(a, "invalid://example.com");
+  const sourceURL = new URL(a, "https://non-valid-host.com");
   // The source URL has a host, we use it and ignore the base URL.
-  if (sourceURL.protocol !== "invalid:") {
+  if (sourceURL.host !== "non-valid-host.com") {
     return sourceURL;
   }
 
