@@ -115,7 +115,7 @@ export type FetchResponseOptional<Req extends FetchRequestResponseResolver> =
     ? string | void
     : // If the request set resolver=json, the response can be any type.
     Req extends { resolver: "json" }
-    ? any
+    ? any | void
     : // If the request set resolver=blob, the response should be of Blob type.
     Req extends { resolver: "blob" }
     ? Blob | void
