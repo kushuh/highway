@@ -1,5 +1,3 @@
-import "client-only";
-
 import { APIError, isAPIError } from "../types";
 import { useCallback, useState } from "react";
 
