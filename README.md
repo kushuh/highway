@@ -10,6 +10,15 @@ A minimalistic, modern, configuration centric, strongly typed alternative to fet
 npm i @anovel/highway
 ```
 
+> Note: with typescript, you have to set the following options, in order for the types to be correctly resolved:
+> ```json
+> {
+>   "compilerOptions": {
+>     "moduleResolution": "NodeNext"
+>   }
+> }
+> ```
+
 With Highway.
 
 ```typescript

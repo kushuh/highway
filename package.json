@@ -1,46 +1,32 @@
 {
   "name": "@anovel/highway",
-  "publishConfig": {
-    "access": "public"
-  },
-  "version": "0.2.4",
+  "version": "0.2.7",
   "description": "A minimalistic, modern, configuration centric, strongly typed alternative to fetch API.",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "exports": {
-    ".": {
-      "types" :"./lib/index.d.ts",
-      "import": "./lib/index.js",
-      "require": "./lib/index.js"
-    },
-    "./react": {
-      "types" :"./lib/react/index.d.ts",
-      "import": "./lib/react/index.js",
-      "require": "./lib/react/index.js"
-    }
-  },
   "author": "Geoffroy Vincent <geoffroy.vincent@agoradesecrivains.com>",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/kushuh/highway.git"
-  },
-  "bugs": {
-    "url": "https://github.com/kushuh/highway/issues"
-  },
   "homepage": "https://github.com/kushuh/highway#readme",
   "scripts": {
+    "build:compile": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json",
+    "build:clean": "rm -rf ./lib",
+    "build": "npm run build:clean && npm run build:compile",
     "build:publish": "npm run build && npm publish --access public",
-    "build": "tsc",
     "test": "jest"
   },
-  "keywords": [
-    "fetch",
-    "http",
-    "api",
-    "request",
-    "typescript"
-  ],
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "require": "./lib/cjs/index.js",
+      "import": "./lib/esm/index.js",
+      "default": "./lib/esm/index.js"
+    },
+    "./react": {
+      "types": "./lib/types/react/index.d.ts",
+      "require": "./lib/cjs/react/index.js",
+      "import": "./lib/esm/react/index.js",
+      "default": "./lib/esm/react/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "devDependencies": {
     "@jest/globals": "^29.5.0",
     "@testing-library/jest-dom": "^5.16.5",
@@ -50,17 +36,37 @@
     "jest-environment-jsdom": "^29.5.0",
     "jsdom": "^21.1.1",
     "prettier": "2.8.7",
-    "ts-jest": "^29.0.5",
+    "ts-jest": "^29.1.0",
     "typescript": "^5.0.3",
     "undici": "^5.21.0"
+  },
+  "dependencies": {
+    "@types/node": "^18.15.11",
+    "@types/react": "^18.0.33",
+    "react": "^18.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kushuh/highway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kushuh/highway/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=16"
   },
   "files": [
     "lib",
     "*.d.ts"
   ],
-  "dependencies": {
-    "@types/node": "^18.15.11",
-    "@types/react": "^18.0.31",
-    "react": "^18.2.0"
-  }
+  "keywords": [
+    "fetch",
+    "http",
+    "api",
+    "request",
+    "typescript"
+  ]
 }
